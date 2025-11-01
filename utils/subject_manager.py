@@ -6,6 +6,14 @@ APP_FOLDER = os.path.join(os.getenv("APPDATA") or os.path.expanduser("~"), "File
 DATA_FOLDER = os.path.join(APP_FOLDER, "data")
 SUBJECTS_FILE = os.path.join(DATA_FOLDER, "subjects.json")
 
+DEFAULT_SUBJECT = {
+    "Mathematics",
+    "Physics",
+    "English",
+    "Chemistry",
+    "Biology"
+}
+
 def ensure_data_folder():
     """Ensure the data folder exists and is writable."""
     try:
@@ -24,7 +32,7 @@ def load_subjects():
     path = os.path.join(folder, "subjects.json")
 
     if not os.path.exists(path):
-        save_subjects([])  # create default file
+        save_subjects(DEFAULT_SUBJECT)  # create default file
         return []
 
     try:
