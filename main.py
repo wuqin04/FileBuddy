@@ -77,7 +77,35 @@ class FileBuddy(ctk.CTk):
 
     # TODO: implement sorting logic
     def start_sorting(self):
-        print("Starting to sort...")
+        self.log_message("Initializing to sort your files and folders...")
+        
+        download_path = self.download_frame.download_entry.get().strip()
+
+        if not os.path.exists(download_path):
+            self.log_message("⚠️ Folder does not exist. Please check the path.")
+            return
+        
+        if not os.path.isdir(download_path):
+            self.log_message("⚠️ The path is not a folder, select again.")
+            return
+        
+        mode = self.option_frame.mode_var.get()
+
+        self.log_message(f"Starting organization in '{mode}' mode...")
+        
+        if mode == "type":
+            self.organize_by_type(download_path)
+        elif mode == "subject":
+            self.organize_by_subject(download_path)
+
+        self.log_message("✅ Organizing complete!")
+
+    # TODO: Organize the files by type
+    def organize_by_type(self, folder):
+        pass
+    
+    # TODO: Organize the files by subject
+    def organize_by_subject(self, folder):
         pass
 
     def log_message(self, message):
