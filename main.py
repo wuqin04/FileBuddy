@@ -15,7 +15,7 @@ class FileBuddy(ctk.CTk):
         super().__init__()
 
         self.title("🧠 FileBuddy — Your Study File Helper")
-        self.geometry("800x700")
+        self.geometry("700x750")
         self.resizable(False, False)
 
         # configure grid layout
@@ -40,22 +40,24 @@ class FileBuddy(ctk.CTk):
         self.option_frame.grid(row=3, column=0, sticky="ew", padx=40, pady=10)
 
         # --- START BUTTON ---
-        self.start_button = ctk.CTkButton(self, text="Start Organizing 🚀", height=40, width=200, font=("Inter", 16, "bold"), command=self.start_sorting)
+        self.start_button = ctk.CTkButton(self, text="Start Organizing!", height=40, width=200, font=("Inter", 16, "bold"), command=self.start_sorting)
         self.start_button.grid(row=4, column=0, pady=(10, 10))
 
         # --- LOG BOX ---
+        self.log_title = ctk.CTkLabel(self, text="📜 Activity Log", font=("Inter", 14, "bold"))
+        self.log_title.grid(row=5, column=0, sticky="w", padx=45, pady=(10, 0))
         self.log_box = ctk.CTkTextbox(self, height=180, corner_radius=12)
-        self.log_box.grid(row=5, column=0, sticky="nsew", padx=40, pady=(0, 10))
+        self.log_box.grid(row=6, column=0, sticky="nsew", padx=40, pady=(0, 10))
         
         # configure log message color code
-        self.log_box.tag_config("warning", foreground="#e6b800")   # yellow for warnings
-        self.log_box.tag_config("error", foreground="#ff4d4d")     # red for critical
+        self.log_box.tag_config("warning", foreground="#E6B800")   # yellow for warnings
+        self.log_box.tag_config("error", foreground="#FF4D4D")     # red for critical
 
         self.log_message("Start organizing your folders or files!\n")
 
         # --- Theme Selection ---
         self.theme_frame = ThemeSection(self, self.toggle_theme)
-        self.theme_frame.grid(row=6, column=0, pady=(5, 20))
+        self.theme_frame.grid(row=7, column=0, pady=(5, 20))
 
     # --- FUNCTIONS ---
     def browse_download(self):
@@ -83,9 +85,8 @@ class FileBuddy(ctk.CTk):
     def open_subject_manager(self):
         win = ctk.CTkToplevel(self)
         win.title("Manage Subjects")
-        win.geometry("350x400")
+        win.geometry("360x450")
         win.resizable(False, False)
-
         win.transient(self)
         win.grab_set()
         win.focus_force()
@@ -93,46 +94,89 @@ class FileBuddy(ctk.CTk):
 
         subjects = load_subjects()
 
-        title = ctk.CTkLabel(win, text="Your Subjects", font=("Inter", 16, "bold"))
-        title.pack(pady=10)
+        # --- HEADER ---
+        title = ctk.CTkLabel(win, text="Manage Your Subjects", font=("Inter", 16, "bold"))
+        title.pack(pady=(15, 5))
 
-        subject_box = ctk.CTkTextbox(win, width=300, height=220)
-        subject_box.pack(pady=5)
-        subject_box.insert("end", "\n".join(subjects))
+        desc = ctk.CTkLabel(win, text="Add or remove subjects to personalize sorting", font=("Inter", 12))
+        desc.pack(pady=(0, 10))
 
-        entry = ctk.CTkEntry(win, placeholder_text="Add or remove subject...")
-        entry.pack(pady=5)
+        # --- SCROLLABLE LIST ---
+        list_frame = ctk.CTkScrollableFrame(win, width=320, height=260)
+        list_frame.pack(pady=(0, 10), fill="both", expand=True)
 
-        def refresh_box():
-            subject_box.delete("1.0", "end")
-            subject_box.insert("end", "\n".join(subjects))
+        def refresh_list():
+            """Rebuild the scrollable list of subjects"""
+            for widget in list_frame.winfo_children():
+                widget.destroy()
 
-        def add_subject():
-            sub = entry.get().strip()
-            if sub and sub not in subjects:
+            if not subjects:
+                empty = ctk.CTkLabel(list_frame, text="No subjects added yet.", font=("Inter", 12, "italic"))
+                empty.pack(pady=20)
+                return
+
+            for sub in subjects:
+                row = ctk.CTkFrame(list_frame, fg_color="transparent")
+                row.pack(fill="x", padx=5, pady=2)
+
+                label = ctk.CTkLabel(row, text=sub, font=("Inter", 13))
+                label.pack(side="left", padx=10, pady=3)
+
+                del_btn = ctk.CTkButton(
+                    row,
+                    text="🗑",
+                    width=40,
+                    height=28,
+                    fg_color="#e63946",
+                    hover_color="#d62839",
+                    command=lambda s=sub: delete_subject(s)
+                )
+                del_btn.pack(side="right", padx=5)
+
+        def delete_subject(sub):
+            subjects.remove(sub)
+            save_subjects(subjects)
+            self.log_message(f"🗑️ Removed subject: {sub}")
+            refresh_list()
+
+        # --- ADD SUBJECT POPUP ---
+        def open_add_popup():
+            popup = ctk.CTkToplevel(win)
+            popup.title("Add New Subject")
+            popup.geometry("300x160")
+            popup.resizable(False, False)
+            popup.transient(win)
+            popup.grab_set()
+
+            ctk.CTkLabel(popup, text="Enter new subject name or subject code:", font=("Inter", 13)).pack(pady=(15, 5))
+            entry = ctk.CTkEntry(popup, placeholder_text="e.g. Programming, FHMM1024", width=200)
+            entry.pack(pady=(0, 10), padx=30)
+
+            def add_subject():
+                sub = entry.get().strip()
+                if not sub:
+                    return
+                if sub in subjects:
+                    self.log_message(f"⚠️ {sub} already exists.")
+                    popup.destroy()
+                    return
                 subjects.append(sub)
                 save_subjects(subjects)
-                refresh_box()
-                entry.delete(0, "end")
+                refresh_list()
                 self.log_message(f"✅ Added new subject: {sub}")
+                popup.destroy()
 
-        def delete_subject():
-            sub = entry.get().strip()
-            if sub in subjects:
-                subjects.remove(sub)
-                save_subjects(subjects)
-                refresh_box()
-                entry.delete(0, "end")
-                self.log_message(f"🗑️ Removed subject: {sub}")
+            ctk.CTkButton(popup, text="Add Subject", command=add_subject).pack(pady=10)
 
-        add_btn = ctk.CTkButton(win, text="Add", command=add_subject)
-        add_btn.pack(pady=(5, 2))
+        # --- FOOTER BUTTONS ---
+        add_btn = ctk.CTkButton(win, text="➕ Add Subject", height=35, command=open_add_popup)
+        add_btn.pack(pady=(5, 5))
 
-        del_btn = ctk.CTkButton(win, text="Delete", command=delete_subject)
-        del_btn.pack(pady=(0, 10))
+        close_btn = ctk.CTkButton(win, text="Close", height=35, command=win.destroy)
+        close_btn.pack(pady=(0, 10))
 
-        close_btn = ctk.CTkButton(win, text="Close", command=win.destroy)
-        close_btn.pack(pady=(10, 5))
+        # Build initial list
+        refresh_list()
 
     def start_sorting(self):
         self.log_message("Initializing to sort your files and folders...")

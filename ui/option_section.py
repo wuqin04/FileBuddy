@@ -31,7 +31,7 @@ class OptionSection(ctk.CTkFrame):
         )
         self.radio2.grid(row=2, column=0, sticky="w", padx=20, pady=(0, 5))
 
-        self.subject_button = ctk.CTkButton(self, text="📚 Manage Subjects", height=35, width=180, command=open_subject_manager_callback)
+        self.subject_button = ctk.CTkButton(self, text="Manage Subjects", height=35, width=180, command=open_subject_manager_callback)
         self.subject_button.grid(row=2, column=1, padx=(10, 15), pady=(0, 5), sticky="w")
     def get_mode(self):
         return self.mode_var.get()
