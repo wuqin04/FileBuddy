@@ -1,7 +1,7 @@
 import customtkinter as ctk
 
 class ThemeSection(ctk.CTkFrame):
-    def __init__(self, parent, toggle_callback):
+    def __init__(self, parent, toggle_callback, current_theme="light"):
         super().__init__(parent, fg_color="transparent")
 
         self.theme_switch = ctk.CTkSwitch(
@@ -11,3 +11,8 @@ class ThemeSection(ctk.CTkFrame):
             command=toggle_callback
         )
         self.theme_switch.grid(row=0, column=0, pady=10)
+
+        if current_theme.lower() == "light":
+            self.theme_switch.deselect()
+        else:
+            self.theme_switch.select()

@@ -3,11 +3,11 @@ from ui.output_section import OutputSection
 from ui.option_section import OptionSection
 from ui.theme_selection import ThemeSection
 from utils.subject_manager import load_subjects, save_subjects
+from utils.config_manager import load_config, save_config
 import customtkinter as ctk
 from customtkinter import filedialog
 import os
 
-ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
 
 class FileBuddy(ctk.CTk):
@@ -17,6 +17,9 @@ class FileBuddy(ctk.CTk):
         self.title("🧠 FileBuddy — Your Study File Helper")
         self.geometry("700x750")
         self.resizable(False, False)
+
+        self.config_data = load_config()
+        ctk.set_appearance_mode(self.config_data["theme"])
 
         # configure grid layout
         self.grid_columnconfigure(0, weight=1)
@@ -56,7 +59,7 @@ class FileBuddy(ctk.CTk):
         self.log_message("Start organizing your folders or files!\n")
 
         # --- Theme Selection ---
-        self.theme_frame = ThemeSection(self, self.toggle_theme)
+        self.theme_frame = ThemeSection(self, self.toggle_theme, self.config_data["theme"])
         self.theme_frame.grid(row=7, column=0, pady=(5, 20))
 
     # --- FUNCTIONS ---
@@ -66,6 +69,9 @@ class FileBuddy(ctk.CTk):
             self.download_frame.download_entry.delete(0, "end")
             self.download_frame.download_entry.insert(0, download_path)
             self.log_message(f"Download directory is set to: {download_path}")
+
+            self.config_data["last_download_path"] = download_path
+            save_config(self.config_data)
 
         if not os.path.exists(download_path):
             self.log_message("⚠️ Selected folder does not exist.", "warning")
@@ -77,6 +83,9 @@ class FileBuddy(ctk.CTk):
             self.output_frame.output_entry.delete(0, "end")
             self.output_frame.output_entry.insert(0, output_path)
             self.log_message(f"Output directory is set to: {output_path}")
+
+            self.config_data["last_output_path"] = output_path
+            save_config(self.config_data)
 
         if not os.path.exists(output_path):
             self.log_message("⚠️ Selected folder does not exist.", "warning")
@@ -207,35 +216,35 @@ class FileBuddy(ctk.CTk):
         if mode == "type":
             self.organize_by_type(download_path, output_path)
         elif mode == "subject":
-            self.organize_by_subject(download_path)
+            self.organize_by_subject(download_path, output_path)
 
         self.log_message("✅ All files have been organized successfully!\n")
 
     def organize_by_type(self, src_folder, dst_folder):
         for file in os.listdir(src_folder):
-            src_file = os.path.join(src_folder, file)
-            if os.path.isfile(src_file):
+            file_path = os.path.join(src_folder, file)
+            if os.path.isfile(file_path):
                 ext = os.path.splitext(file)[1][1:].strip().lower()
                 if not ext:
                     continue
                 dest_folder = os.path.join(dst_folder, ext.upper())
                 os.makedirs(dest_folder, exist_ok=True)
                 try:
-                    os.rename(src_file, os.path.join(dest_folder, file))
+                    os.rename(file_path, os.path.join(dest_folder, file))
                     self.log_message(f"📦 Moved {file} → {dest_folder}")
                 except Exception as e:
                     self.log_message(f"⚠️ Failed to move {file}: {e}", "warning")
 
-    def organize_by_subject(self, folder):
+    def organize_by_subject(self, src_folder, dst_folder):
         subjects = load_subjects()
 
-        for file in os.listdir(folder):
-            file_path = os.path.join(folder, file)
+        for file in os.listdir(src_folder):
+            file_path = os.path.join(src_folder, file)
             if os.path.isfile(file_path):
                 moved = False
                 for subject in subjects:
                     if subject.lower() in file.lower():
-                        dest_folder = os.path.join(folder, subject)
+                        dest_folder = os.path.join(dst_folder, subject)
                         os.makedirs(dest_folder, exist_ok=True)
                         try:
                             os.rename(file_path, os.path.join(dest_folder, file))
@@ -247,7 +256,6 @@ class FileBuddy(ctk.CTk):
                 if not moved:
                     self.log_message(f"Skipped {file} (no subject match)")
 
-
     def log_message(self, message, level="info"):
         self.log_box.configure(state="normal")
         self.log_box.insert("end", message + "\n", level)
@@ -255,11 +263,12 @@ class FileBuddy(ctk.CTk):
         self.log_box.configure(state="disabled")        
 
     def toggle_theme(self):
-        mode = ctk.get_appearance_mode()
-        if mode == "Light":
-            ctk.set_appearance_mode("Dark")
-        else:
-            ctk.set_appearance_mode("Light")
+        current = ctk.get_appearance_mode().lower()
+        new_mode = "dark" if current == "light" else "light"
+        ctk.set_appearance_mode(new_mode)
+        self.config_data["theme"] = new_mode
+        save_config(self.config_data)
+        self.log_message(f"✅ {new_mode.capitalize()} theme has successfully updated.")
 
 if __name__ == "__main__":
     app = FileBuddy()

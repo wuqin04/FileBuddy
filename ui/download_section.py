@@ -6,6 +6,7 @@ class DownloadSection(ctk.CTkFrame):
         super().__init__(parent, corner_radius=12)
         self.grid_columnconfigure(0, weight=1)
         self.log_callback = log_callback
+        
 
         self.download_label = ctk.CTkLabel(self, text="📁 Where are your downloads?", font=("Inter", 14))
         self.download_label.grid(row=0, column=0, sticky="w", padx=15, pady=(10, 0))
