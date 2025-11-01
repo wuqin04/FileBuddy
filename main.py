@@ -2,6 +2,7 @@ from ui.download_section import DownloadSection
 from ui.output_section import OutputSection
 from ui.option_section import OptionSection
 from ui.theme_selection import ThemeSection
+from utils.subject_manager import load_subjects, save_subjects
 import customtkinter as ctk
 from customtkinter import filedialog
 import os
@@ -13,7 +14,7 @@ class FileBuddy(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("🧠 SmartDesk — Your Study File Helper")
+        self.title("🧠 FileBuddy — Your Study File Helper")
         self.geometry("800x700")
         self.resizable(False, False)
 
@@ -21,21 +22,21 @@ class FileBuddy(ctk.CTk):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(7, weight=1)
 
-        # ---HEADER---
+        # --- HEADER ---
         self.header_label = ctk.CTkLabel(self, text="👋 Welcome! Let's keep your computer tidy today.", 
                                          font=("Inter", 18, "bold"))
         self.header_label.grid(row=0, column=0, pady=(20, 10))
 
-        # ---Download Section---
+        # --- Download Section ---
         self.download_frame = DownloadSection(self, self.browse_download)
         self.download_frame.grid(row=1, column=0, sticky="ew", padx=40, pady=10)
 
-        # ---Output Section---
+        # --- Output Section ---
         self.output_frame = OutputSection(self, self.browse_output)
         self.output_frame.grid(row=2, column=0, sticky="ew", padx=40, pady=10)
 
-        # ---Options Section---
-        self.option_frame = OptionSection(self)
+        # --- Options Section ---
+        self.option_frame = OptionSection(self, self.open_subject_manager)
         self.option_frame.grid(row=3, column=0, sticky="ew", padx=40, pady=10)
 
         # --- START BUTTON ---
@@ -52,11 +53,11 @@ class FileBuddy(ctk.CTk):
 
         self.log_message("Start organizing your folders or files!\n")
 
-        # ---Theme Selection---
+        # --- Theme Selection ---
         self.theme_frame = ThemeSection(self, self.toggle_theme)
         self.theme_frame.grid(row=6, column=0, pady=(5, 20))
 
-    # ---FUNCTIONS---
+    # --- FUNCTIONS ---
     def browse_download(self):
         download_path = filedialog.askdirectory(title="Select your Downloads folder")
         if download_path:
@@ -78,6 +79,60 @@ class FileBuddy(ctk.CTk):
         if not os.path.exists(output_path):
             self.log_message("⚠️ Selected folder does not exist.", "warning")
             return
+
+    def open_subject_manager(self):
+        win = ctk.CTkToplevel(self)
+        win.title("Manage Subjects")
+        win.geometry("350x400")
+        win.resizable(False, False)
+
+        win.transient(self)
+        win.grab_set()
+        win.focus_force()
+        win.lift()
+
+        subjects = load_subjects()
+
+        title = ctk.CTkLabel(win, text="Your Subjects", font=("Inter", 16, "bold"))
+        title.pack(pady=10)
+
+        subject_box = ctk.CTkTextbox(win, width=300, height=220)
+        subject_box.pack(pady=5)
+        subject_box.insert("end", "\n".join(subjects))
+
+        entry = ctk.CTkEntry(win, placeholder_text="Add or remove subject...")
+        entry.pack(pady=5)
+
+        def refresh_box():
+            subject_box.delete("1.0", "end")
+            subject_box.insert("end", "\n".join(subjects))
+
+        def add_subject():
+            sub = entry.get().strip()
+            if sub and sub not in subjects:
+                subjects.append(sub)
+                save_subjects(subjects)
+                refresh_box()
+                entry.delete(0, "end")
+                self.log_message(f"✅ Added new subject: {sub}")
+
+        def delete_subject():
+            sub = entry.get().strip()
+            if sub in subjects:
+                subjects.remove(sub)
+                save_subjects(subjects)
+                refresh_box()
+                entry.delete(0, "end")
+                self.log_message(f"🗑️ Removed subject: {sub}")
+
+        add_btn = ctk.CTkButton(win, text="Add", command=add_subject)
+        add_btn.pack(pady=(5, 2))
+
+        del_btn = ctk.CTkButton(win, text="Delete", command=delete_subject)
+        del_btn.pack(pady=(0, 10))
+
+        close_btn = ctk.CTkButton(win, text="Close", command=win.destroy)
+        close_btn.pack(pady=(10, 5))
 
     def start_sorting(self):
         self.log_message("Initializing to sort your files and folders...")
@@ -128,7 +183,8 @@ class FileBuddy(ctk.CTk):
                     self.log_message(f"⚠️ Failed to move {file}: {e}", "warning")
 
     def organize_by_subject(self, folder):
-        subjects = ["FCCM", "Physics", "Chemistry", "Biology", "English"]
+        subjects = load_subjects()
+
         for file in os.listdir(folder):
             file_path = os.path.join(folder, file)
             if os.path.isfile(file_path):
@@ -137,12 +193,16 @@ class FileBuddy(ctk.CTk):
                     if subject.lower() in file.lower():
                         dest_folder = os.path.join(folder, subject)
                         os.makedirs(dest_folder, exist_ok=True)
-                        os.rename(file_path, os.path.join(dest_folder, file))
-                        self.log_message(f"Moved {file} → {subject}/")
-                        moved = True
-                        break
+                        try:
+                            os.rename(file_path, os.path.join(dest_folder, file))
+                            self.log_message(f"📦 Moved {file} → {subject}/")
+                            moved = True
+                            break
+                        except Exception as e:
+                            self.log_message(f"⚠️ Failed to move {file}: {e}", "warning")
                 if not moved:
                     self.log_message(f"Skipped {file} (no subject match)")
+
 
     def log_message(self, message, level="info"):
         self.log_box.configure(state="normal")

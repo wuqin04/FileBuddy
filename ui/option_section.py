@@ -1,7 +1,7 @@
 import customtkinter as ctk
 
 class OptionSection(ctk.CTkFrame):
-    def __init__(self, parent):
+    def __init__(self, parent, open_subject_manager_callback):
         super().__init__(parent, corner_radius=12)
         self.grid_columnconfigure(0, weight=1)
 
@@ -29,7 +29,9 @@ class OptionSection(ctk.CTkFrame):
             variable=self.mode_var,
             value="subject"
         )
-        self.radio2.grid(row=2, column=0, sticky="w", padx=20, pady=(0, 10))
+        self.radio2.grid(row=2, column=0, sticky="w", padx=20, pady=(0, 5))
 
+        self.subject_button = ctk.CTkButton(self, text="📚 Manage Subjects", height=35, width=180, command=open_subject_manager_callback)
+        self.subject_button.grid(row=2, column=1, padx=(10, 15), pady=(0, 5), sticky="w")
     def get_mode(self):
         return self.mode_var.get()
