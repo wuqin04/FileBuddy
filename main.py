@@ -6,7 +6,7 @@ import customtkinter as ctk
 from customtkinter import filedialog
 import os
 
-ctk.set_appearance_mode("System")
+ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
 
 class FileBuddy(ctk.CTk):
@@ -98,7 +98,7 @@ class FileBuddy(ctk.CTk):
         elif mode == "subject":
             self.organize_by_subject(download_path)
 
-        self.log_message("✅ Organizing complete!")
+        self.log_message("✅ Organizing complete!\n")
 
     # TODO: Organize the files by type
     def organize_by_type(self, folder):
