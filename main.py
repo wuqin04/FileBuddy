@@ -45,6 +45,11 @@ class FileBuddy(ctk.CTk):
         # --- LOG BOX ---
         self.log_box = ctk.CTkTextbox(self, height=180, corner_radius=12)
         self.log_box.grid(row=5, column=0, sticky="nsew", padx=40, pady=(0, 10))
+        
+        # configure log message color code
+        self.log_box.tag_config("warning", foreground="#e6b800")   # yellow for warnings
+        self.log_box.tag_config("error", foreground="#ff4d4d")     # red for critical
+
         self.log_message("Start organizing your folders or files!\n")
 
         # ---Theme Selection---
@@ -53,7 +58,6 @@ class FileBuddy(ctk.CTk):
 
     # ---FUNCTIONS---
     def browse_download(self):
-        print("Browsing download directory...")
         download_path = filedialog.askdirectory(title="Select your Downloads folder")
         if download_path:
             self.download_frame.download_entry.delete(0, "end")
@@ -61,7 +65,7 @@ class FileBuddy(ctk.CTk):
             self.log_message(f"Download directory is set to: {download_path}")
 
         if not os.path.exists(download_path):
-            self.log_message("⚠️ Selected folder does not exist.")
+            self.log_message("⚠️ Selected folder does not exist.", "warning")
             return
 
     def browse_output(self):
@@ -72,45 +76,77 @@ class FileBuddy(ctk.CTk):
             self.log_message(f"Output directory is set to: {output_path}")
 
         if not os.path.exists(output_path):
-            self.log_message("⚠️ Selected folder does not exist.")
+            self.log_message("⚠️ Selected folder does not exist.", "warning")
             return
 
-    # TODO: implement sorting logic
     def start_sorting(self):
         self.log_message("Initializing to sort your files and folders...")
         
         download_path = self.download_frame.download_entry.get().strip()
+        output_path = self.output_frame.output_entry.get().strip()
 
-        if not os.path.exists(download_path):
-            self.log_message("⚠️ Folder does not exist. Please check the path.")
+        if not output_path or download_path:
+            self.log_message("⚠️ Path is not found, either your download path or organized path is not specified.", "warning")
+
+        if not os.path.exists(download_path) or not os.path.isdir(download_path):
+            self.log_message("⚠️ Folder does not exists or is not a folder path.", "warning")
             return
         
-        if not os.path.isdir(download_path):
-            self.log_message("⚠️ The path is not a folder, select again.")
-            return
+        if not os.path.exists(output_path):
+            try:
+                os.makedirs(output_path, exist_ok=True)
+                self.log_message(f"📁 Created output folder at: {output_path}")
+            except Exception as e:
+                self.log_message(f"❌ Failed to create output folder: {e}", "error")
+
+        self.log_message(f"🚀 Organizing files from {download_path} → {output_path}")
         
         mode = self.option_frame.mode_var.get()
 
         self.log_message(f"Starting organization in '{mode}' mode...")
         
         if mode == "type":
-            self.organize_by_type(download_path)
+            self.organize_by_type(download_path, output_path)
         elif mode == "subject":
             self.organize_by_subject(download_path)
 
-        self.log_message("✅ Organizing complete!\n")
+        self.log_message("✅ All files have been organized successfully!\n")
 
-    # TODO: Organize the files by type
-    def organize_by_type(self, folder):
-        pass
-    
-    # TODO: Organize the files by subject
+    def organize_by_type(self, src_folder, dst_folder):
+        for file in os.listdir(src_folder):
+            src_file = os.path.join(src_folder, file)
+            if os.path.isfile(src_file):
+                ext = os.path.splitext(file)[1][1:].strip().lower()
+                if not ext:
+                    continue
+                dest_folder = os.path.join(dst_folder, ext.upper())
+                os.makedirs(dest_folder, exist_ok=True)
+                try:
+                    os.rename(src_file, os.path.join(dest_folder, file))
+                    self.log_message(f"📦 Moved {file} → {dest_folder}")
+                except Exception as e:
+                    self.log_message(f"⚠️ Failed to move {file}: {e}", "warning")
+
     def organize_by_subject(self, folder):
-        pass
+        subjects = ["FCCM", "Physics", "Chemistry", "Biology", "English"]
+        for file in os.listdir(folder):
+            file_path = os.path.join(folder, file)
+            if os.path.isfile(file_path):
+                moved = False
+                for subject in subjects:
+                    if subject.lower() in file.lower():
+                        dest_folder = os.path.join(folder, subject)
+                        os.makedirs(dest_folder, exist_ok=True)
+                        os.rename(file_path, os.path.join(dest_folder, file))
+                        self.log_message(f"Moved {file} → {subject}/")
+                        moved = True
+                        break
+                if not moved:
+                    self.log_message(f"Skipped {file} (no subject match)")
 
-    def log_message(self, message):
+    def log_message(self, message, level="info"):
         self.log_box.configure(state="normal")
-        self.log_box.insert("end", message + "\n")
+        self.log_box.insert("end", message + "\n", level)
         self.log_box.see("end")
         self.log_box.configure(state="disabled")        
 
