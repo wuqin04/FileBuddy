@@ -7,6 +7,7 @@ from utils.config_manager import load_config, save_config
 import customtkinter as ctk
 from customtkinter import filedialog
 import os
+from rapidfuzz import fuzz
 
 ctk.set_default_color_theme("blue")
 
@@ -221,13 +222,20 @@ class FileBuddy(ctk.CTk):
         self.log_message("✅ All files have been organized successfully!\n")
 
     def organize_by_type(self, src_folder, dst_folder):
+        screenshot_patterns = ["screenshot", "screen_shot", "screen shot", "snip", "capture", "截图"]
+
         for file in os.listdir(src_folder):
             file_path = os.path.join(src_folder, file)
             if os.path.isfile(file_path):
                 ext = os.path.splitext(file)[1][1:].strip().lower()
                 if not ext:
                     continue
-                dest_folder = os.path.join(dst_folder, ext.upper())
+
+                if any(keyword in file.lower() for keyword in screenshot_patterns):
+                    dest_folder = os.path.join(dst_folder, "Screenshots")
+                else:
+                    dest_folder = os.path.join(dst_folder, ext.upper())
+                    
                 os.makedirs(dest_folder, exist_ok=True)
                 try:
                     os.rename(file_path, os.path.join(dest_folder, file))
@@ -248,7 +256,7 @@ class FileBuddy(ctk.CTk):
                         os.makedirs(dest_folder, exist_ok=True)
                         try:
                             os.rename(file_path, os.path.join(dest_folder, file))
-                            self.log_message(f"📦 Moved {file} → {subject}/")
+                            self.log_message(f"📦 Moved {file} → {subject}")
                             moved = True
                             break
                         except Exception as e:
