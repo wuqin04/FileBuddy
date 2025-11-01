@@ -7,7 +7,6 @@ from utils.config_manager import load_config, save_config
 import customtkinter as ctk
 from customtkinter import filedialog
 import os
-from rapidfuzz import fuzz
 
 ctk.set_default_color_theme("blue")
 
