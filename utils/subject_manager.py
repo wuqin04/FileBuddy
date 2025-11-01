@@ -33,7 +33,7 @@ def load_subjects():
 
     if not os.path.exists(path):
         save_subjects(DEFAULT_SUBJECT)  # create default file
-        return []
+        return DEFAULT_SUBJECT
 
     try:
         with open(path, "r", encoding="utf-8") as f:
