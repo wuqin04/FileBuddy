@@ -9,7 +9,7 @@ from customtkinter import filedialog
 import os
 
 ctk.set_default_color_theme("blue")
-VERSION = "v1.2"
+VERSION = "v1.3"
 
 class FileBuddy(ctk.CTk):
     def __init__(self):
@@ -58,6 +58,9 @@ class FileBuddy(ctk.CTk):
         self.log_box.tag_config("error", foreground="#FF4D4D")     # red for critical
 
         self.log_message("Start organizing your folders or files!\n")
+
+        # --Progression Bar Section---
+        self.progress_index = None
 
         # --- Theme Selection ---
         self.theme_frame = ThemeSection(self, self.toggle_theme, self.config_data["theme"])
@@ -241,58 +244,102 @@ class FileBuddy(ctk.CTk):
     def organize_by_type(self, src_folder, dst_folder):
         screenshot_patterns = ["screenshot", "screen_shot", "screen shot", "snip", "capture", "截图"]
 
-        for file in os.listdir(src_folder):
-            file_path = os.path.join(src_folder, file)
-            if os.path.isfile(file_path):
-                ext = os.path.splitext(file)[1][1:].strip().lower()
-                if not ext:
-                    continue
+        files = [f for f in os.listdir(src_folder) if os.path.isfile(os.path.join(src_folder, f))]
+        total = len(files)
+        if total == 0:
+            self.log_message("⚠️ No files found to organize.", "warning")
+            return
 
-                if any(keyword in file.lower() for keyword in screenshot_patterns):
-                    dest_folder = os.path.join(dst_folder, "Screenshots")
-                else:
-                    dest_folder = os.path.join(dst_folder, ext.upper())
-                    
-                os.makedirs(dest_folder, exist_ok=True)
-                try:
-                    os.rename(file_path, os.path.join(dest_folder, file))
-                    self.log_message(f"📦 Moved {file} → {dest_folder}")
-                except Exception as e:
-                    self.log_message(f"⚠️ Failed to move {file}: {e}", "warning")
+        self.log_box.configure(state="normal")
+        self.log_box.insert("end", "\n📊 Progress Bar (Organizing Files)\n")
+        self.log_box.insert("end", "\n[░░░░░░░░░░░░░░░░░░░░] 0%\n")
+        self.progress_index = self.log_box.index("end-2l")  # store progress bar index
+        self.log_box.configure(state="disabled")
+        self.log_box.update_idletasks()
+
+        for i, file in enumerate(files, start=1):
+            file_path = os.path.join(src_folder, file)
+            ext = os.path.splitext(file)[1][1:].strip().lower()
+            if not ext:
+                continue
+
+            if any(keyword in file.lower() for keyword in screenshot_patterns):
+                dest_folder = os.path.join(dst_folder, "Screenshots")
+            else:
+                dest_folder = os.path.join(dst_folder, ext.upper())
+
+            os.makedirs(dest_folder, exist_ok=True)
+
+            try:
+                os.rename(file_path, os.path.join(dest_folder, file))
+                self.log_message(f"📦 Moved {file} → {dest_folder}")
+            except Exception as e:
+                self.log_message(f"⚠️ Failed to move {file}: {e}", "warning")
+
+            self.update_text_progress(i, total)
 
     def organize_by_subject(self, src_folder, dst_folder):
         subjects = load_subjects()
 
-        for file in os.listdir(src_folder):
+        files = [f for f in os.listdir(src_folder) if os.path.isfile(os.path.join(src_folder, f))]
+        total = len(files)
+        if total == 0:
+            self.log_message("⚠️ No files found to organize.", "warning")
+            return
+
+        self.log_box.configure(state="normal")
+        self.log_box.insert("end", "\n📊 Progress Bar (Organizing Files)\n")
+        self.log_box.insert("end", "\n[░░░░░░░░░░░░░░░░░░░░] 0%\n")
+        self.progress_index = self.log_box.index("end-2l")  # Store position of progress bar
+        self.log_box.configure(state="disabled")
+        self.log_box.update_idletasks()
+
+        # --- Start organizing files ---
+        for i, file in enumerate(files, start=1):
             file_path = os.path.join(src_folder, file)
-            if os.path.isfile(file_path):
-                moved = False
+            moved = False
 
-                for subject in subjects:
-                    # Skip subjects that are not marked as included
-                    if not subject.get("include", True):
-                        continue
+            for subject in subjects:
+                # Skip subjects that are not marked as included
+                if not subject.get("include", True):
+                    continue
 
-                    sub_name = subject["name"]
-                    if sub_name.lower() in file.lower():
-                        dest_folder = os.path.join(dst_folder, sub_name)
-                        os.makedirs(dest_folder, exist_ok=True)
-                        try:
-                            os.rename(file_path, os.path.join(dest_folder, file))
-                            self.log_message(f"📦 Moved {file} → {sub_name}")
-                            moved = True
-                            break
-                        except Exception as e:
-                            self.log_message(f"⚠️ Failed to move {file}: {e}", "warning")
+                sub_name = subject["name"]
+                if sub_name.lower() in file.lower():
+                    dest_folder = os.path.join(dst_folder, sub_name)
+                    os.makedirs(dest_folder, exist_ok=True)
+                    try:
+                        os.rename(file_path, os.path.join(dest_folder, file))
+                        self.log_message(f"📦 Moved {file} → {sub_name}")
+                        moved = True
+                        break
+                    except Exception as e:
+                        self.log_message(f"⚠️ Failed to move {file}: {e}", "warning")
 
-                if not moved:
-                    self.log_message(f"Skipped {file} (no subject match)")
+            if not moved:
+                self.log_message(f"Skipped {file} (no subject match)")
+
+            self.update_text_progress(i, total)
 
     def log_message(self, message, level="info"):
         self.log_box.configure(state="normal")
         self.log_box.insert("end", message + "\n", level)
         self.log_box.see("end")
         self.log_box.configure(state="disabled")        
+
+    def update_text_progress(self, current, total):
+        bar_length = 20  # Number of boxes in the bar
+        progress = current / total
+        filled = int(bar_length * progress)
+        bar = "█" * filled + "░" * (bar_length - filled)
+        percent = int(progress * 100)
+
+        # Move to the stored index where progress was inserted
+        self.log_box.configure(state="normal")
+        self.log_box.delete(self.progress_index, f"{self.progress_index} lineend")
+        self.log_box.insert(self.progress_index, f"[{bar}] {percent}%")
+        self.log_box.configure(state="disabled")
+        self.log_box.update_idletasks()
 
     def toggle_theme(self):
         current = ctk.get_appearance_mode().lower()
