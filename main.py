@@ -1,4 +1,4 @@
-from ui.download_section import DownloadSection
+from ui.target_folder_section import TargetFolderSection
 from ui.output_section import OutputSection
 from ui.option_section import OptionSection
 from ui.theme_selection import ThemeSection
@@ -9,12 +9,13 @@ from customtkinter import filedialog
 import os
 
 ctk.set_default_color_theme("blue")
+VERSION = "v1.1"
 
 class FileBuddy(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("🧠 FileBuddy — Your Study File Helper")
+        self.title(f"🧠 FileBuddy — Your Study File Helper {VERSION}")
         self.geometry("700x750")
         self.resizable(False, False)
 
@@ -31,7 +32,7 @@ class FileBuddy(ctk.CTk):
         self.header_label.grid(row=0, column=0, pady=(20, 10))
 
         # --- Download Section ---
-        self.download_frame = DownloadSection(self, self.browse_download)
+        self.download_frame = TargetFolderSection(self, self.browse_download)
         self.download_frame.grid(row=1, column=0, sticky="ew", padx=40, pady=10)
 
         # --- Output Section ---
