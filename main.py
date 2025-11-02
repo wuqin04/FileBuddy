@@ -9,7 +9,7 @@ from customtkinter import filedialog
 import os
 
 ctk.set_default_color_theme("blue")
-VERSION = "v1.1"
+VERSION = "v1.2"
 
 class FileBuddy(ctk.CTk):
     def __init__(self):
