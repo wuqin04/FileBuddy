@@ -1,5 +1,5 @@
 2. add check duplicate files and have the options to remove them
 3. increase the visiblitiy of activity log
-4. add patch notes in a new menu to show updates 
 5. (extra) make the app run on background without pressing the button start organizing, 
     which do auto organize when detected files
+6. add selection method to the 'subject' mode for choosing subject whether want them to be organize or not

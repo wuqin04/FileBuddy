@@ -1,8 +1,24 @@
 {
     "subjects": [
-        "Mathematics",
-        "Physics",
-        "Chemistry",
-        "Biology"
+        {
+            "name": "Mathematics",
+            "include": true
+        },
+        {
+            "name": "Physics",
+            "include": true
+        },
+        {
+            "name": "English",
+            "include": true
+        },
+        {
+            "name": "Chemistry",
+            "include": true
+        },
+        {
+            "name": "Biology",
+            "include": true
+        }
     ]
 }

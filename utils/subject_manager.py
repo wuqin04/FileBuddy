@@ -7,12 +7,10 @@ DATA_FOLDER = os.path.join(APP_FOLDER, "data")
 SUBJECTS_FILE = os.path.join(DATA_FOLDER, "subjects.json")
 
 DEFAULT_SUBJECT = [
-    "Mathematics",
-    "Physics",
-    "English",
-    "Chemistry",
-    "Biology"
+    {"name": "Mathematics", "include": True},
+    {"name": "Programming", "include": True}
 ]
+
 
 def ensure_data_folder():
     """Ensure the data folder exists and is writable."""
@@ -26,7 +24,7 @@ def ensure_data_folder():
     return DATA_FOLDER
 
 def load_subjects():
-    """Load subjects list from JSON file, creating or repairing defaults if needed."""
+    """Load subjects list from JSON file, upgrading old format if necessary."""
     folder = ensure_data_folder()
     path = os.path.join(folder, "subjects.json")
 
@@ -38,25 +36,63 @@ def load_subjects():
     try:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
-            subjects = data.get("subjects", [])
 
-            # Handle corrupted or empty data
-            if not isinstance(subjects, list) or len(subjects) == 0:
-                raise ValueError("Subjects file is empty or invalid")
+        subjects = data.get("subjects", [])
 
-            return subjects
+        # --- Handle old format (list of strings) ---
+        if all(isinstance(s, str) for s in subjects):
+            subjects = [{"name": s, "include": True} for s in subjects]
+            save_subjects(subjects)
+
+        # --- Handle corrupted or empty data ---
+        elif not isinstance(subjects, list) or len(subjects) == 0:
+            raise ValueError("Subjects file is empty or invalid")
+
+        return subjects
 
     except Exception:
         # File corrupted, unreadable, or invalid → reset to default
         save_subjects(DEFAULT_SUBJECT)
         return DEFAULT_SUBJECT
 
-
-
 def save_subjects(subjects):
-    """Save the given subject list to JSON."""
     folder = ensure_data_folder()
     path = os.path.join(folder, "subjects.json")
 
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump({"subjects": subjects}, f, indent=4)
+    # Normalize input
+    if isinstance(subjects, dict) and "subjects" in subjects:
+        raw = subjects["subjects"]
+    else:
+        raw = subjects
+
+    normalized = []
+    if isinstance(raw, list):
+        for item in raw:
+            if isinstance(item, str):
+                # Old format: just a name string
+                normalized.append({"name": item, "include": True})
+            elif isinstance(item, dict):
+                # Ensure required structure
+                name = item.get("name") or item.get("subject") or item.get("title")
+                if not name:
+                    continue
+                include = bool(item.get("include", True))
+                normalized.append({"name": name, "include": include})
+    else:
+        normalized = []
+
+    data = {"subjects": normalized}
+
+    # --- Atomic write ---
+    tmp_path = path + ".tmp"
+    try:
+        with open(tmp_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+        os.replace(tmp_path, path)  # safe atomic replacement
+    finally:
+        # Cleanup leftover temp if anything went wrong
+        if os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except Exception:
+                pass

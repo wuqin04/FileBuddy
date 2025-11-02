@@ -116,7 +116,7 @@ class FileBuddy(ctk.CTk):
         list_frame.pack(pady=(0, 10), fill="both", expand=True)
 
         def refresh_list():
-            """Rebuild the scrollable list of subjects"""
+            # Rebuild the scrollable list of subjects
             for widget in list_frame.winfo_children():
                 widget.destroy()
 
@@ -129,9 +129,18 @@ class FileBuddy(ctk.CTk):
                 row = ctk.CTkFrame(list_frame, fg_color="transparent")
                 row.pack(fill="x", padx=5, pady=2)
 
-                label = ctk.CTkLabel(row, text=sub, font=("Inter", 13))
-                label.pack(side="left", padx=10, pady=3)
+                # Checkbox (include toggle)
+                include_var = ctk.BooleanVar(value=sub.get("include", True))
 
+                def toggle_include(var=include_var, s=sub):
+                    s["include"] = var.get()
+                    save_subjects(subjects)
+                    self.log_message(f"{'✅' if var.get() else '🚫'} Sorting status updated for: {s['name']}")
+
+                chk = ctk.CTkCheckBox(row, text=sub["name"], variable=include_var, command=toggle_include)
+                chk.pack(side="left", padx=10, pady=3)
+
+                # Delete button
                 del_btn = ctk.CTkButton(
                     row,
                     text="🗑",
@@ -146,7 +155,7 @@ class FileBuddy(ctk.CTk):
         def delete_subject(sub):
             subjects.remove(sub)
             save_subjects(subjects)
-            self.log_message(f"🗑️ Removed subject: {sub}")
+            self.log_message(f"🗑️ Removed subject: {sub['name']}")
             refresh_list()
 
         # --- ADD SUBJECT POPUP ---
@@ -163,17 +172,25 @@ class FileBuddy(ctk.CTk):
             entry.pack(pady=(0, 10), padx=30)
 
             def add_subject():
-                sub = entry.get().strip()
-                if not sub:
+                sub_name = entry.get().strip()
+                if not sub_name:
                     return
-                if sub in subjects:
-                    self.log_message(f"⚠️ {sub} already exists.")
+
+                # Ensure backward compatibility with old list format
+                if any(
+                    (s["name"].lower() if isinstance(s, dict) else s.lower()) == sub_name.lower()
+                    for s in subjects
+                ):
+                    self.log_message(f"⚠️ {sub_name} already exists.")
                     popup.destroy()
                     return
-                subjects.append(sub)
+
+                # Always append in new structured format
+                new_subject = {"name": sub_name, "include": True}
+                subjects.append(new_subject)
                 save_subjects(subjects)
                 refresh_list()
-                self.log_message(f"✅ Added new subject: {sub}")
+                self.log_message(f"✅ Added new subject: {sub_name}")
                 popup.destroy()
 
             ctk.CTkButton(popup, text="Add Subject", command=add_subject).pack(pady=10)
@@ -250,17 +267,24 @@ class FileBuddy(ctk.CTk):
             file_path = os.path.join(src_folder, file)
             if os.path.isfile(file_path):
                 moved = False
+
                 for subject in subjects:
-                    if subject.lower() in file.lower():
-                        dest_folder = os.path.join(dst_folder, subject)
+                    # Skip subjects that are not marked as included
+                    if not subject.get("include", True):
+                        continue
+
+                    sub_name = subject["name"]
+                    if sub_name.lower() in file.lower():
+                        dest_folder = os.path.join(dst_folder, sub_name)
                         os.makedirs(dest_folder, exist_ok=True)
                         try:
                             os.rename(file_path, os.path.join(dest_folder, file))
-                            self.log_message(f"📦 Moved {file} → {subject}")
+                            self.log_message(f"📦 Moved {file} → {sub_name}")
                             moved = True
                             break
                         except Exception as e:
                             self.log_message(f"⚠️ Failed to move {file}: {e}", "warning")
+
                 if not moved:
                     self.log_message(f"Skipped {file} (no subject match)")
 
