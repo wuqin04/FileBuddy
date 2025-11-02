@@ -6,13 +6,13 @@ APP_FOLDER = os.path.join(os.getenv("APPDATA") or os.path.expanduser("~"), "File
 DATA_FOLDER = os.path.join(APP_FOLDER, "data")
 SUBJECTS_FILE = os.path.join(DATA_FOLDER, "subjects.json")
 
-DEFAULT_SUBJECT = {
+DEFAULT_SUBJECT = [
     "Mathematics",
     "Physics",
     "English",
     "Chemistry",
     "Biology"
-}
+]
 
 def ensure_data_folder():
     """Ensure the data folder exists and is writable."""
@@ -25,23 +25,32 @@ def ensure_data_folder():
         return fallback
     return DATA_FOLDER
 
-
 def load_subjects():
-    """Load subjects list from JSON file, creating a default if not found."""
+    """Load subjects list from JSON file, creating or repairing defaults if needed."""
     folder = ensure_data_folder()
     path = os.path.join(folder, "subjects.json")
 
+    # If file missing → create defaults
     if not os.path.exists(path):
-        save_subjects(DEFAULT_SUBJECT)  # create default file
+        save_subjects(DEFAULT_SUBJECT)
         return DEFAULT_SUBJECT
 
     try:
         with open(path, "r", encoding="utf-8") as f:
-            return json.load(f).get("subjects", [])
+            data = json.load(f)
+            subjects = data.get("subjects", [])
+
+            # Handle corrupted or empty data
+            if not isinstance(subjects, list) or len(subjects) == 0:
+                raise ValueError("Subjects file is empty or invalid")
+
+            return subjects
+
     except Exception:
-        # corrupted or unreadable file, reset it
-        save_subjects([])
-        return []
+        # File corrupted, unreadable, or invalid → reset to default
+        save_subjects(DEFAULT_SUBJECT)
+        return DEFAULT_SUBJECT
+
 
 
 def save_subjects(subjects):
