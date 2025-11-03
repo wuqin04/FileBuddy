@@ -7,7 +7,7 @@ class OutputSection(ctk.CTkFrame):
 
         self.grid_columnconfigure(0, weight=1)
 
-        self.output_label = ctk.CTkLabel(self, text="📁 Save organized files to this folder:", font=("Inter", 14))
+        self.output_label = ctk.CTkLabel(self, text="📁 Choose the folder you want to save:", font=("Inter", 14))
         self.output_label.grid(row=0, column=0, sticky="w", padx=15, pady=(10, 0))
 
         self.output_entry = ctk.CTkEntry(self, placeholder_text="Select your organized files folder")

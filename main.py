@@ -26,7 +26,7 @@ class FileBuddy(ctk.CTk):
 
         # configure grid layout
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(7, weight=1)
+        self.grid_rowconfigure(8, weight=1)
 
         # --- HEADER ---
         self.header_label = ctk.CTkLabel(self, text="👋 Welcome! Let's keep your computer tidy today.", 
