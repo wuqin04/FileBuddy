@@ -3,13 +3,14 @@ from ui.output_section import OutputSection
 from ui.option_section import OptionSection
 from ui.theme_selection import ThemeSection
 from utils.subject_manager import load_subjects, save_subjects
+from utils.file_types_manager import load_file_types, save_file_types
 from utils.config_manager import load_config, save_config
 import customtkinter as ctk
 from customtkinter import filedialog
 import os
 
 ctk.set_default_color_theme("blue")
-VERSION = "v1.3"
+VERSION = "v1.4"
 
 class FileBuddy(ctk.CTk):
     def __init__(self):
@@ -19,6 +20,7 @@ class FileBuddy(ctk.CTk):
         self.geometry("700x750")
         self.resizable(False, False)
 
+        # setup data files
         self.config_data = load_config()
         ctk.set_appearance_mode(self.config_data["theme"])
 
@@ -40,7 +42,7 @@ class FileBuddy(ctk.CTk):
         self.output_frame.grid(row=2, column=0, sticky="ew", padx=40, pady=10)
 
         # --- Options Section ---
-        self.option_frame = OptionSection(self, self.open_subject_manager)
+        self.option_frame = OptionSection(self, self.open_file_type_manager, self.open_subject_manager)
         self.option_frame.grid(row=3, column=0, sticky="ew", padx=40, pady=10)
 
         # --- START BUTTON ---
@@ -208,6 +210,70 @@ class FileBuddy(ctk.CTk):
         # Build initial list
         refresh_list()
 
+    def open_file_type_manager(self):
+        src_folder = self.download_frame.download_entry.get().strip()
+
+        if not os.path.exists(src_folder) or not os.path.isdir(src_folder):
+            self.log_message("⚠️ Invalid or missing source folder.", "warning")
+            return
+
+        # --- Create popup window ---
+        win = ctk.CTkToplevel(self)
+        win.title("Manage File Types")
+        win.geometry("360x450")
+        win.resizable(False, False)
+        win.transient(self)
+        win.grab_set()
+        win.focus_force()
+        win.lift()
+
+        label = ctk.CTkLabel(win, text="Select which file types to organize:", font=("Inter", 14, "bold"))
+        label.pack(pady=(15, 10))
+
+        # --- Detect available extensions in source folder ---
+        exts = set()
+        for f in os.listdir(src_folder):
+            path = os.path.join(src_folder, f)
+            if os.path.isfile(path):
+                ext = os.path.splitext(f)[1].lower()
+                if ext:
+                    exts.add(ext)
+        exts = sorted(exts)
+
+        if not exts:
+            ctk.CTkLabel(win, text="No file types found.", text_color="gray").pack(pady=20)
+            return
+        
+        # --- Load saved file type settings ---
+        saved_types = load_file_types()  # dict like {".pdf": True, ".docx": False, ...}
+
+        # --- Store checkbox states ---
+        ext_vars = {}
+        for ext in exts:
+            ext_vars[ext] = ctk.BooleanVar(value=saved_types.get(ext, True))  # default True if not saved
+
+        # --- Scrollable frame for checkboxes ---
+        scroll_frame = ctk.CTkScrollableFrame(win, width=280, height=250)
+        scroll_frame.pack(pady=(0, 10))
+
+        for ext in exts:
+            chk = ctk.CTkCheckBox(scroll_frame, text=ext.upper(), variable=ext_vars[ext])
+            chk.pack(anchor="w", padx=10, pady=2)
+
+        # --- Footer buttons ---
+        def save_selection():
+            # Save updated checkbox states
+            updated = {ext: var.get() for ext, var in ext_vars.items()}
+            save_file_types(updated)
+            self.log_message("💾 File type preferences saved.")
+            win.destroy()
+
+        save_btn = ctk.CTkButton(win, text="Save & Close", command=save_selection)
+        save_btn.pack(pady=(5, 5))
+
+        cancel_btn = ctk.CTkButton(win, text="Cancel", fg_color="gray", command=win.destroy)
+        cancel_btn.pack(pady=(0, 10))
+
     def start_sorting(self):
         self.log_message("Initializing to sort your files and folders...")
         
@@ -231,17 +297,23 @@ class FileBuddy(ctk.CTk):
         self.log_message(f"🚀 Organizing files from {download_path} → {output_path}")
         
         mode = self.option_frame.mode_var.get()
-
         self.log_message(f"Starting organization in '{mode}' mode...")
         
         if mode == "type":
-            self.organize_by_type(download_path, output_path)
+            file_types = load_file_types()
+            selected_exts = [ext.lstrip(".") for ext, enabled in file_types.items() if enabled]
+
+            if not selected_exts:
+                self.log_message("⚠️ No file types selected for sorting. Please manage file types first.", "warning")
+                return
+            
+            self.organize_by_type(download_path, output_path, selected_exts)
         elif mode == "subject":
             self.organize_by_subject(download_path, output_path)
 
         self.log_message("✅ All files have been organized successfully!\n")
 
-    def organize_by_type(self, src_folder, dst_folder):
+    def organize_by_type(self, src_folder, dst_folder, selected_exts=None):
         screenshot_patterns = ["screenshot", "screen_shot", "screen shot", "snip", "capture", "截图"]
 
         files = [f for f in os.listdir(src_folder) if os.path.isfile(os.path.join(src_folder, f))]
@@ -249,6 +321,14 @@ class FileBuddy(ctk.CTk):
         if total == 0:
             self.log_message("⚠️ No files found to organize.", "warning")
             return
+        
+        if selected_exts:
+            selected_exts = [ext.lower() for ext in selected_exts]
+            files = [f for f in files if os.path.splitext(f)[1][1:].lower() in selected_exts]
+            total = len(files)
+            if total == 0:
+                self.log_message("⚠️ No matching files found for selected types.", "warning")
+                return
 
         self.log_box.configure(state="normal")
         self.log_box.insert("end", "\n📊 Progress Bar (Organizing Files)\n")

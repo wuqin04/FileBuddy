@@ -1,5 +1,4 @@
-import json
-import os
+import json, os
 
 # Define app data folder inside APPDATA or fallback to user home
 APP_FOLDER = os.path.join(os.getenv("APPDATA") or os.path.expanduser("~"), "FileBuddy")
