@@ -1,4 +1,3 @@
 2. (extra) add check duplicate files and have the options to remove them
 5. (extra) make the app run on background without pressing the button start organizing, 
     which do auto organize when detected files
-6. have the options to select which type to sort without sorting all of the files in the type mode
