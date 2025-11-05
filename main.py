@@ -5,7 +5,7 @@ from ui.duplicate_tab import DuplicateScannerTab
 class FileBuddy(ctk.CTk):
     def __init__(self):
         super().__init__()
-
+        
         self.title("🧠 FileBuddy — Your Study File Helper")
         self.geometry("700x750")
         self.resizable(False, False)
