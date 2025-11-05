@@ -123,7 +123,15 @@ class DuplicateScannerTab(ctk.CTkFrame):
         )
         self.remove_selected_btn.grid(row=0, column=0, padx=5)
 
-        self.remove_all_btn = ctk.CTkButton(self.action_frame, text="⚠️ Remove All Duplicates", width=180, state="disabled", fg_color="#D9534F", hover_color="#C9302C")
+        self.remove_all_btn = ctk.CTkButton(
+            self.action_frame,
+            text="⚠️ Remove All Duplicates",
+            width=180,
+            state="disabled",
+            fg_color="#D9534F",
+            hover_color="#C9302C",
+            command=self.delete_all_duplicates
+        )
         self.remove_all_btn.grid(row=0, column=1, padx=5)
 
         # --- Log Box ---
@@ -235,7 +243,7 @@ class DuplicateScannerTab(ctk.CTkFrame):
                 var = ctk.IntVar()
                 self.file_check_vars[f] = var
                 # Truncate the display text if it's too long
-                max_len = 75
+                max_len = 70
                 if len(f) <= max_len:
                     display_name = f
                 else:
@@ -301,6 +309,58 @@ class DuplicateScannerTab(ctk.CTkFrame):
 
         self.refresh_file_list()
 
+    def delete_all_duplicates(self):
+        if not self.duplicates:
+            messagebox.showinfo("No Duplicates", "There are no duplicates to remove.")
+            return
+
+        confirm = messagebox.askyesno(
+            "Confirm Mass Deletion",
+            "⚠️ This will remove all duplicate copies, keeping only one file from each group.\n"
+            "All removed files will be moved to the Recycle Bin.\n\n"
+            "Proceed?"
+        )
+        if not confirm:
+            return
+
+        deleted, failed = 0, 0
+
+        for hash_val, files in self.duplicates.items():
+            to_delete = files[1:] if len(files) > 1 else []
+            for file_path in to_delete:
+                try:
+                    # --- Normalize file path properly ---
+                    abs_path = os.path.abspath(os.path.normpath(file_path))
+
+                    # --- Extra safety: check existence ---
+                    if not os.path.exists(abs_path):
+                        self.log_message(f"⚠️ File not found: {abs_path}\n", "warning")
+                        failed += 1
+                        continue
+
+                    # --- Attempt deletion ---
+                    send2trash(abs_path)
+                    deleted += 1
+                    self.log_message(f"🗑️ Sent to Recycle Bin: {abs_path}\n")
+
+                except Exception as e:
+                    import traceback
+                    error_info = traceback.format_exc()
+                    self.log_message(f"❌ Failed to delete {file_path}\nReason: {e}\nDetails: {error_info}\n", "error")
+                    failed += 1
+
+        self.refresh_file_list()
+
+        messagebox.showinfo(
+            "Mass Deletion Complete",
+            f"✅ {deleted} duplicate file(s) moved to Recycle Bin.\n"
+            f"⚠️ {failed} failed or missing files."
+        )
+
+        self.log_message(f"🗑️ Deleted {deleted} duplicates, {failed} failed.\n")
+
+
+        
     def log_message(self, message, tag=None):
         self.log_box.configure(state="normal")
         if tag:
