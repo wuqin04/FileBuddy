@@ -7,7 +7,7 @@ class FileBuddy(ctk.CTk):
         super().__init__()
         
         self.title("🧠 FileBuddy — Your Study File Helper")
-        self.geometry("700x750")
+        self.geometry("700x720")
         self.resizable(False, False)
 
         # --- Grid layout for window ---
