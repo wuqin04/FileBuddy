@@ -148,7 +148,7 @@ If you’d like to contribute:
 
 ## 📄 License
 
-Distributed under the **MIT License**. See `LICENSE.txt` for more information.
+Distributed under the **Apache License 2.0**. See the [`LICENSE`](LICENSE) file for more details.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -182,8 +182,8 @@ Special thanks to:
 [stars-url]: https://github.com/wuqin04/FileBuddy/stargazers
 [issues-shield]: https://img.shields.io/github/issues/wuqin04/FileBuddy.svg?style=for-the-badge
 [issues-url]: https://github.com/wuqin04/FileBuddy/issues
-[license-shield]: https://img.shields.io/github/license/wuqin04/FileBuddy.svg?style=for-the-badge
-[license-url]: https://github.com/wuqin04/FileBuddy/blob/main/LICENSE
+[license-shield]: https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge
+[license-url]: https://www.apache.org/licenses/LICENSE-2.0
 [product-screenshot]: images/image.png
 [Python-badge]: https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white
 [Python-url]: https://www.python.org/
