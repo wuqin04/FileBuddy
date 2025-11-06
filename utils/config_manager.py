@@ -7,7 +7,8 @@ CONFIG_FILE = os.path.join(DATA_FOLDER, "configs.json")
 DEFAULT_CONFIG = {
     "theme": "light",
     "last_download_path": "",
-    "last_output_path": ""
+    "last_output_path": "",
+    "last_scan_path": ""
 }
 
 def ensure_appdata_folder():

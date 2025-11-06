@@ -1,6 +1,9 @@
 import customtkinter as ctk
+import tkinter as tk
 from ui.organizer_tab import OrganizerTab
 from ui.duplicate_tab import DuplicateScannerTab
+from ui.license_dialog import LicenseDialog
+from utils import license_manager
 
 class FileBuddy(ctk.CTk):
     def __init__(self):
@@ -13,6 +16,20 @@ class FileBuddy(ctk.CTk):
         # --- Grid layout for window ---
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
+
+        # --- Menu Bar ---
+        self.menu_bar = tk.Menu(self)
+
+        # Settings Menu
+        settings_menu = tk.Menu(self.menu_bar, tearoff=0)
+        settings_menu.add_command(label="Activate License", command=self.open_license_dialog)
+        settings_menu.add_separator()
+        settings_menu.add_command(label="Exit", command=self.destroy)
+
+        # Attach menu
+        self.menu_bar.add_cascade(label="⚙️ Settings", menu=settings_menu)
+        self.config(menu=self.menu_bar)
+
 
         # --- MAIN TABS ---
         self.tabview = ctk.CTkTabview(self)
@@ -34,8 +51,15 @@ class FileBuddy(ctk.CTk):
         self.duplicate_tab = DuplicateScannerTab(duplicate_frame)
         self.duplicate_tab.grid(row=0, column=0, sticky="nsew")
 
+        status = "Pro" if license_manager.is_pro_user() else "Free"
+        self.status_label = ctk.CTkLabel(self, text=f"Account Status: {status}")
+        self.status_label.place(x=15, y=10)
+
     def log_to_console(self, message):
         print(message)
+
+    def open_license_dialog(self):
+        LicenseDialog(self)
 
 
 if __name__ == "__main__":

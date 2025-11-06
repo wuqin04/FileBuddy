@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from tkinter import filedialog
+from utils.config_manager import load_config, save_config
 import os, hashlib
 from tkinter import messagebox
 from send2trash import send2trash
@@ -59,8 +60,6 @@ class ToolTip:
                 pass
             ToolTip.active_tip = None
 
-
-
 class DuplicateScannerTab(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
@@ -85,7 +84,9 @@ class DuplicateScannerTab(ctk.CTkFrame):
         self.folder_frame.grid(row=1, column=0, sticky="ew", padx=40, pady=(10, 5))
         self.folder_frame.grid_columnconfigure(0, weight=1)
 
-        self.folder_path_var = ctk.StringVar(value="")
+        self.config_data = load_config()
+        default_folder = self.config_data.get("last_scan_path", "")
+        self.folder_path_var = ctk.StringVar(value=default_folder)
         self.folder_entry = ctk.CTkEntry(self.folder_frame, textvariable=self.folder_path_var, placeholder_text="Select a folder to scan...")
         self.folder_entry.grid(row=0, column=0, sticky="ew", padx=(10, 5), pady=10)
 
@@ -155,10 +156,22 @@ class DuplicateScannerTab(ctk.CTkFrame):
 
     # ---FUNCTIONS---
     def browse_folder(self):
-        folder = filedialog.askdirectory(title="Select Folder to Scan")
-        if folder:
-            self.folder_path_var.set(folder)
-            self.log_message(f"📁 Selected folder: {folder}\n")
+        folder_path = filedialog.askdirectory(title="Select Folder to Scan")
+        if folder_path:
+            # Update entry field
+            self.folder_entry.delete(0, "end")
+            self.folder_entry.insert(0, folder_path)
+            self.log_message(f"📁 Folder set to: {folder_path}")
+
+            # Save to configs
+            self.config_data["last_scan_path"] = folder_path
+            save_config(self.config_data)
+
+        # Validate the folder path
+        if not folder_path or not os.path.exists(folder_path):
+            self.log_message("⚠️ Selected folder does not exist.", "warning")
+            return
+
 
     def start_scan(self):
         folder = self.folder_path_var.get().strip()
