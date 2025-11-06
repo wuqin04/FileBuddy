@@ -35,7 +35,7 @@
 
 ## 📖 About The Project
 
-[![Product Screenshot][product-screenshot]]
+![Product Screenshot][product-screenshot]
 
 **FileBuddy** is a desktop application that helps users quickly organize files and remove duplicates with ease.  
 It was designed with **students, professionals, and daily PC users** in mind — anyone who wants a cleaner workspace without complex setup.
