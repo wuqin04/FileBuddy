@@ -67,11 +67,10 @@ class DuplicateScannerTab(ctk.CTkFrame):
         self.duplicates = {}
         self.file_check_vars = {}
 
-        # --- Grid config for responsiveness ---
         self.grid_rowconfigure(6, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        # --- HEADER ---
+        #  Header
         self.header_label = ctk.CTkLabel(
             self,
             text="🔍 Find and Manage Duplicate Files",
@@ -79,7 +78,7 @@ class DuplicateScannerTab(ctk.CTkFrame):
         )
         self.header_label.grid(row=0, column=0, pady=(20, 10))
 
-        # --- Folder Selection ---
+        # Folder
         self.folder_frame = ctk.CTkFrame(self)
         self.folder_frame.grid(row=1, column=0, sticky="ew", padx=40, pady=(10, 5))
         self.folder_frame.grid_columnconfigure(0, weight=1)
@@ -93,7 +92,6 @@ class DuplicateScannerTab(ctk.CTkFrame):
         self.browse_btn = ctk.CTkButton(self.folder_frame, text="Browse", width=100, command=self.browse_folder)
         self.browse_btn.grid(row=0, column=1, padx=(5, 10), pady=10)
 
-        # --- Scan Button ---
         self.scan_btn = ctk.CTkButton(
             self, 
             text="Start Scanning for Duplicates", 
@@ -104,14 +102,14 @@ class DuplicateScannerTab(ctk.CTkFrame):
         )
         self.scan_btn.grid(row=2, column=0, pady=(10, 15))
 
-        # --- Results List---
+        # Result List
         self.result_title = ctk.CTkLabel(self, text="📂 Duplicate Files Found", font=("Inter", 14, "bold"))
         self.result_title.grid(row=3, column=0, sticky="w", padx=45, pady=(10, 0))
 
         self.result_frame = ctk.CTkScrollableFrame(self, height=250, corner_radius=12)
         self.result_frame.grid(row=4, column=0, sticky="nsew", padx=40, pady=(0, 10))
 
-        # --- Action Buttons ---
+        # Action Button
         self.action_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.action_frame.grid(row=5, column=0, pady=(5, 10))
 
@@ -135,7 +133,7 @@ class DuplicateScannerTab(ctk.CTkFrame):
         )
         self.remove_all_btn.grid(row=0, column=1, padx=5)
 
-        # --- Log Box ---
+        # Log Box
         self.log_title = ctk.CTkLabel(self, text="🧾 Scanner Log", font=("Inter", 14, "bold"))
         self.log_title.grid(row=6, column=0, sticky="w", padx=45, pady=(10, 0))
 
@@ -148,13 +146,13 @@ class DuplicateScannerTab(ctk.CTkFrame):
 
         root = self.winfo_toplevel()
         def on_mousewheel(event):
-            ToolTip.hide_all()     # hide any visible tooltip
-            return None            # allow the scroll event to propagate normally
+            ToolTip.hide_all()     
+            return None            
 
         root.bind_all("<MouseWheel>", on_mousewheel, add="+")
 
 
-    # ---FUNCTIONS---
+    # Functions
     def browse_folder(self):
         folder_path = filedialog.askdirectory(title="Select Folder to Scan")
         if folder_path:

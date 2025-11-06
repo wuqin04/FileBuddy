@@ -13,11 +13,11 @@ class FileBuddy(ctk.CTk):
         self.geometry("700x720")
         self.resizable(False, False)
 
-        # --- Grid layout for window ---
+        # Grid layout for window
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        # --- Menu Bar ---
+        # Menu Bar
         self.menu_bar = tk.Menu(self)
 
         # Settings Menu
@@ -34,11 +34,11 @@ class FileBuddy(ctk.CTk):
         self.config(menu=self.menu_bar)
 
 
-        # --- MAIN TABS ---
+        # Main Tab
         self.tabview = ctk.CTkTabview(self)
         self.tabview.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
-        # --- Organizer Tab ---
+        # Organizer Tab
         organizer_frame = self.tabview.add("🗂️ Organizer")
         organizer_frame.grid_rowconfigure(0, weight=1)
         organizer_frame.grid_columnconfigure(0, weight=1)
@@ -46,7 +46,7 @@ class FileBuddy(ctk.CTk):
         self.organizer_tab = OrganizerTab(organizer_frame, log_callback=self.log_to_console)
         self.organizer_tab.grid(row=0, column=0, sticky="nsew")
 
-        # --- Duplicate Scanner Tab ---
+        # Duplicate Scanner Tab
         duplicate_frame = self.tabview.add("🔍 Duplicate Scanner")
         duplicate_frame.grid_rowconfigure(0, weight=1)
         duplicate_frame.grid_columnconfigure(0, weight=1)
