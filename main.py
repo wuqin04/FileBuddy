@@ -1,9 +1,9 @@
 import customtkinter as ctk
 import tkinter as tk
+import tkinter.font as tkFont
 from ui.organizer_tab import OrganizerTab
 from ui.duplicate_tab import DuplicateScannerTab
-from ui.license_dialog import LicenseDialog
-from utils import license_manager
+from utils.pro_manager import buy_me_coffee
 
 class FileBuddy(ctk.CTk):
     def __init__(self):
@@ -21,8 +21,11 @@ class FileBuddy(ctk.CTk):
         self.menu_bar = tk.Menu(self)
 
         # Settings Menu
+        font_style = tkFont.Font(family="Segoe UI", size=11)
+        self.option_add("*Menu.font", font_style)
+        
         settings_menu = tk.Menu(self.menu_bar, tearoff=0)
-        settings_menu.add_command(label="Activate License", command=self.open_license_dialog)
+        settings_menu.add_command(label="Buy Me a Coffee Support Me", command=self.direct_buy_me_coffee_link)
         settings_menu.add_separator()
         settings_menu.add_command(label="Exit", command=self.destroy)
 
@@ -51,15 +54,11 @@ class FileBuddy(ctk.CTk):
         self.duplicate_tab = DuplicateScannerTab(duplicate_frame)
         self.duplicate_tab.grid(row=0, column=0, sticky="nsew")
 
-        status = "Pro" if license_manager.is_pro_user() else "Free"
-        self.status_label = ctk.CTkLabel(self, text=f"Account Status: {status}")
-        self.status_label.place(x=15, y=10)
-
     def log_to_console(self, message):
         print(message)
 
-    def open_license_dialog(self):
-        LicenseDialog(self)
+    def direct_buy_me_coffee_link(self):
+        buy_me_coffee()
 
 
 if __name__ == "__main__":
