@@ -77,21 +77,29 @@ pip --version
 
 ### ⚙️ Installation
 
+#### Option 1 — From Source
 1. **Clone the repository**
-```bash
+   ```bash
    git clone https://github.com/wuqin04/FileBuddy.git
    cd FileBuddy
-```
+   ```
 
 2. **Install dependencies**
-```bash
+   ```bash
    pip install -r requirements.txt
-```
+   ```
 
 3. **Run the application**
-```bash
+   ```bash
    python main.py
-```
+   ```
+
+#### Option 2 — From Release (Recommended for Most Users)
+1. Go to the **[Releases page](https://github.com/wuqin04/FileBuddy/releases)**.  
+2. Download the latest version of **FileBuddy** for your operating system (e.g. `FileBuddy_v1.0.0.exe`).  
+3. Run the installer or executable — no setup required.  
+
+> 💡 Ideal for students or non-technical users who just want to use FileBuddy right away.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
