@@ -66,7 +66,7 @@ Follow these steps to set up **FileBuddy** locally.
 
 ### 📋 Prerequisites
 
-- Python 3.10 or newer  
+- Python 3.13 or newer
 - pip package manager  
 
 To check your version:
@@ -185,3 +185,7 @@ Special thanks to:
 [license-shield]: https://img.shields.io/github/license/wuqin04/FileBuddy.svg?style=for-the-badge
 [license-url]: https://github.com/wuqin04/FileBuddy/blob/main/LICENSE
 [product-screenshot]: images/image.png
+[Python-badge]: https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white
+[Python-url]: https://www.python.org/
+[CTk-badge]: https://img.shields.io/badge/CustomTkinter-2E8B57?style=for-the-badge&logo=python&logoColor=white
+[CTk-url]: https://github.com/TomSchimansky/CustomTkinter
