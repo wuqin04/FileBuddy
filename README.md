@@ -35,7 +35,7 @@
 
 ## 📖 About The Project
 
-[![Product Screenshot][product-screenshot]](images/image.png)
+[![Product Screenshot][product-screenshot]]
 
 **FileBuddy** is a desktop application that helps users quickly organize files and remove duplicates with ease.  
 It was designed with **students, professionals, and daily PC users** in mind — anyone who wants a cleaner workspace without complex setup.
@@ -184,3 +184,4 @@ Special thanks to:
 [issues-url]: https://github.com/wuqin04/FileBuddy/issues
 [license-shield]: https://img.shields.io/github/license/wuqin04/FileBuddy.svg?style=for-the-badge
 [license-url]: https://github.com/wuqin04/FileBuddy/blob/main/LICENSE
+[product-screenshot]: images/image.png
