@@ -172,3 +172,15 @@ Special thanks to:
 * Everyone who supported FileBuddy’s early versions ❤️
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- MARKDOWN LINKS & IMAGES -->
+[contributors-shield]: https://img.shields.io/github/contributors/wuqin04/FileBuddy.svg?style=for-the-badge
+[contributors-url]: https://github.com/wuqin04/FileBuddy/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/wuqin04/FileBuddy.svg?style=for-the-badge
+[forks-url]: https://github.com/wuqin04/FileBuddy/network/members
+[stars-shield]: https://img.shields.io/github/stars/wuqin04/FileBuddy.svg?style=for-the-badge
+[stars-url]: https://github.com/wuqin04/FileBuddy/stargazers
+[issues-shield]: https://img.shields.io/github/issues/wuqin04/FileBuddy.svg?style=for-the-badge
+[issues-url]: https://github.com/wuqin04/FileBuddy/issues
+[license-shield]: https://img.shields.io/github/license/wuqin04/FileBuddy.svg?style=for-the-badge
+[license-url]: https://github.com/wuqin04/FileBuddy/blob/main/LICENSE
